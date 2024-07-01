@@ -1,15 +1,20 @@
-package main
+package snake
 
 import (
 	"fmt"
 	"math/rand"
+	"strings"
+	"time"
 
 	"github.com/eiannone/keyboard"
 )
 
-func main2() {
+const MAP_SIZE = 15
+const _FRAME_INTERVAL = time.Millisecond * 1000
 
-	var gamemap [10][10]string
+func RunSnake(dir *keyboard.Key) {
+
+	var gamemap [MAP_SIZE][MAP_SIZE]string
 	for i := 0; i < len(gamemap); i++ {
 		for j := 0; j < len(gamemap[0]); j++ {
 			gamemap[i][j] = " "
@@ -17,40 +22,30 @@ func main2() {
 	}
 
 	var snakepos [][2]int
-	snakepos = append(snakepos, [2]int{5, 3}) //headcolumn
-	snakepos = append(snakepos, [2]int{5, 2})
+	snakepos = append(snakepos, [2]int{MAP_SIZE / 2, MAP_SIZE / 2}) //headcolumn
+	snakepos = append(snakepos, [2]int{MAP_SIZE / 2, (MAP_SIZE / 2) - 1})
 	snakemap := sliceToMap(snakepos)
 
 	foodrow, foodcolumn := getFood(gamemap)
 	var gamend bool
-	var key string
+	tempkey := "65514"
 
 	for !gamend {
+		time.Sleep(_FRAME_INTERVAL)
+		tempkey = fmt.Sprint(*dir)
 		gamemap[foodrow][foodcolumn] = "▣"
 		printMap(gamemap, snakemap)
-
-		_, key = getKey()
-		cords := changePos(snakepos[0][0], snakepos[0][1], key)
-		// gamend = checkEnd(snakepos)
+		cords := changePos(snakepos[0][0], snakepos[0][1], tempkey)
 		if cords[0] == foodrow && cords[1] == foodcolumn {
 			gamemap[foodrow][foodcolumn] = " "
 			foodrow, foodcolumn = getFood(gamemap)
-			// printMap(gamemap, snakemap)
 		} else { //else if cords[0] != foodrow && cords[1] != foodcolumn { //if food not eaten
 			snakepos = pop(snakepos)
 		}
 		snakepos = pushBack(snakepos, cords)
 		snakemap = sliceToMap(snakepos) //map
-		// if snakepos[0][0] == foodrow && snakepos[0][1] == foodcolumn { //if the food is eaten
-		// 	snakepos = pushBack(snakepos, [2]int{foodrow, foodcolumn})
-		// 	snakemap = sliceToMap(snakepos) //map
-		// 	gamemap[foodrow][foodcolumn] = " "
-		// 	foodrow, foodcolumn = getFood(gamemap)
-		// 	// gamemap[foodrow][foodcolumn] = "▣"
-		// 	// printMap(gamemap, snakemap)
-		// 	continue
-		// }
 		gamend = checkEnd(snakepos)
+
 	}
 }
 
@@ -73,6 +68,7 @@ func getKey() (string, string) {
 	if err != nil {
 		panic(err)
 	}
+	// fmt.Println("...")
 	return fmt.Sprint(char), fmt.Sprint(key)
 
 }
@@ -96,15 +92,16 @@ func changePos(headrow int, headcolumn int, key string) [2]int {
 	return cords
 }
 
-func printMap(gamemap [10][10]string, snakemap map[[2]int]bool) {
+func printMap(gamemap [MAP_SIZE][MAP_SIZE]string, snakemap map[[2]int]bool) {
+
 	clearScreen()
 	var cords [2]int
 	// row := 1
 	// column := 0
-	fmt.Println("----------")
+	fmt.Println(strings.Repeat("-", MAP_SIZE))
 
-	for i := 0; i < 10; i++ {
-		for j := 0; j < 10; j++ {
+	for i := 0; i < MAP_SIZE; i++ {
+		for j := 0; j < MAP_SIZE; j++ {
 			// rowlenght := len(snakepos)
 			// columnlenght := len(snakepos[0])
 			// if i > rowlenght || column > columnlenght { //to prevent index out of range errors
@@ -139,16 +136,16 @@ func printMap(gamemap [10][10]string, snakemap map[[2]int]bool) {
 		}
 		fmt.Println()
 	}
-	fmt.Println("----------")
+	fmt.Println(strings.Repeat("-", MAP_SIZE))
 
 }
 
-func getFood(gamemap [10][10]string) (int, int) {
-	foodrow := rand.Intn(10)
-	foodcolumn := rand.Intn(10)
+func getFood(gamemap [MAP_SIZE][MAP_SIZE]string) (int, int) {
+	foodrow := rand.Intn(MAP_SIZE)
+	foodcolumn := rand.Intn(MAP_SIZE)
 	for gamemap[foodrow][foodcolumn] != " " {
-		foodrow = rand.Intn(10)
-		foodcolumn = rand.Intn(10)
+		foodrow = rand.Intn(MAP_SIZE)
+		foodcolumn = rand.Intn(MAP_SIZE)
 	}
 	return foodrow, foodcolumn
 }
@@ -163,7 +160,7 @@ func checkEnd(snakepos [][2]int) bool {
 			}
 		}
 	}
-	if headrow < 0 || headcolumn < 0 || headrow >= 10 || headcolumn >= 10 { //the head is out of the map
+	if headrow < 0 || headcolumn < 0 || headrow >= MAP_SIZE || headcolumn >= MAP_SIZE { //the head is out of the map
 		fmt.Println("GAME OVER !!!")
 		return true
 	}
