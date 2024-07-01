@@ -1,23 +1,23 @@
 package parallel
 
 import (
-	"fmt"
 	snake "snake/snake"
-	"time"
 
 	"github.com/eiannone/keyboard"
 )
 
-const FRAME_INTERVAL = time.Millisecond * 200
-
 func ParallelTest() {
 
 	var i keyboard.Key = 65514
+	var gameEnd bool = false
 
 	// go print(&i)
-	go snake.RunSnake(&i)
+	go snake.RunSnake(&i, &gameEnd)
 
 	for {
+		if gameEnd {
+			return
+		}
 		i = getKey()
 
 	}
@@ -25,7 +25,6 @@ func ParallelTest() {
 }
 
 func getKey() keyboard.Key {
-
 	_, key, err := keyboard.GetSingleKey()
 	if err != nil {
 		panic(err)
@@ -44,13 +43,4 @@ func getKey() keyboard.Key {
 		return key
 	}
 	return 0
-}
-
-func print(dir *keyboard.Key) {
-	count := 0
-	for {
-		time.Sleep(FRAME_INTERVAL)
-		fmt.Println(count, *dir)
-		count++
-	}
 }

@@ -9,10 +9,10 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
-const MAP_SIZE = 15
-const _FRAME_INTERVAL = time.Millisecond * 1000
+const MAP_SIZE = 25
+const FRAME_INTERVAL = time.Millisecond * 100
 
-func RunSnake(dir *keyboard.Key) {
+func RunSnake(dir *keyboard.Key, gameEnd *bool) {
 
 	var gamemap [MAP_SIZE][MAP_SIZE]string
 	for i := 0; i < len(gamemap); i++ {
@@ -31,10 +31,10 @@ func RunSnake(dir *keyboard.Key) {
 	tempkey := "65514"
 
 	for !gamend {
-		time.Sleep(_FRAME_INTERVAL)
+		time.Sleep(FRAME_INTERVAL)
 		tempkey = fmt.Sprint(*dir)
 		gamemap[foodrow][foodcolumn] = "▣"
-		printMap(gamemap, snakemap)
+
 		cords := changePos(snakepos[0][0], snakepos[0][1], tempkey)
 		if cords[0] == foodrow && cords[1] == foodcolumn {
 			gamemap[foodrow][foodcolumn] = " "
@@ -44,8 +44,9 @@ func RunSnake(dir *keyboard.Key) {
 		}
 		snakepos = pushBack(snakepos, cords)
 		snakemap = sliceToMap(snakepos) //map
+		printMap(gamemap, snakemap)
 		gamend = checkEnd(snakepos)
-
+		*gameEnd = gamend
 	}
 }
 
@@ -61,16 +62,6 @@ func pushBack(snakepos [][2]int, value [2]int) [][2]int {
 
 	snakepos[0] = value
 	return snakepos
-}
-
-func getKey() (string, string) {
-	char, key, err := keyboard.GetSingleKey()
-	if err != nil {
-		panic(err)
-	}
-	// fmt.Println("...")
-	return fmt.Sprint(char), fmt.Sprint(key)
-
 }
 
 func changePos(headrow int, headcolumn int, key string) [2]int {
